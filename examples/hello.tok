@@ -1,38 +1,34 @@
-# Tok v1.1
+# Tok v1.2
 
-p "=== Tok v1.1 ==="
+p "=== Tok v1.2 ==="
 
-# expanded stdlib
 p contains([1,2,3], 2)
-p replace("hello world", "world", "Tok")
-p startswith("TokLang", "Tok")
-p json_dumps({"lang": "Tok", "ver": 1.1})
-js = json_dumps({"a": 1})
-p json_loads(js)
+p json_dumps({"v": 1.2})
 
-# try/catch
 try:
   x = 1 / 0
 catch e:
-  p "ok caught"
+  p "caught"
 
-# OOP
 record Person name:
   f greet:
     "Hi " + self.name
+p Person("Tok").greet()
 
-record Worker(Person) name job:
-  f greet:
-    "Worker " + self.name
-
-p Worker("Ann", "dev").greet()
-
-# Agents with real Tok function as tool
 f search q:
-  "results for: " + q
+  "found:" + q
+f summarize q:
+  "summary:" + q
 
-a = agent("Bot", "search")
+a = agent("Bot", "research")
 add_tool(a, tool("search", search))
-p run_agent(a, "token density")
+add_tool(a, tool("summarize", summarize))
+p run_agent(a, "density")
+p run_steps(a, ["density", "tokens"])
+
+write("tok_tmp.txt", "hello from tok")
+p read("tok_tmp.txt")
+append("tok_tmp.txt", "!")
+p read("tok_tmp.txt")
 
 p "=== done ==="

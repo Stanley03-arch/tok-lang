@@ -2,47 +2,43 @@
 
 **Tok** — experimental ultra-token-efficient language for AI-assisted development.
 
-> **Version 1.1**
+> **Version 1.2**
 
 ## Highlights
 
 ```tok
-# Stdlib
-p contains([1,2,3], 2)
-p replace("hello world", "world", "Tok")
-p json_dumps({"lang": "Tok"})
-
-# try/catch
-try:
-  x = 1 / 0
-catch e:
-  p e
-
-# OOP + inheritance
-record Worker(Person) name job:
-  f greet:
-    "Worker " + self.name
-
-# Agents with real Tok tools
+# Agents with multiple real tools + multi-step runs
 f search q:
-  "results for: " + q
-a = agent("Bot", "search")
+  "found:" + q
+a = agent("Bot", "research")
 add_tool(a, tool("search", search))
-p run_agent(a, "token density")
-# → results=[{'search': 'results for: token density'}]
+p run_agent(a, "density")
+p run_steps(a, ["density", "tokens"])
+
+# HTTP
+# p http_get("https://example.com")
+# p http_json("https://api.example.com/data")
+
+# Files
+write("f.txt", "hello")
+append("f.txt", "!")
+p read("f.txt")
+
+# OOP, try/catch, JSON, comprehensions, pipes… all still there
 ```
 
 ## Feature set
 
 | Area | Support |
 |------|---------|
-| Records + methods + inheritance | ✅ |
-| Agents + **executable Tok tools** | ✅ |
+| Agents + executable tools | ✅ + `run_steps` |
+| HTTP | `http_get`, `http_json` |
+| Files | read, write, append, readlines, exists |
+| OOP | records, methods, inheritance |
 | try / catch | ✅ |
-| JSON | `json_dumps` / `json_loads` |
-| Stdlib | first, last, rev, uniq, keys, contains, replace, slice, … |
-| Comprehensions, pipes, modules | ✅ |
-| String interpolation | `"Hi {name}"` |
+| JSON | json_dumps / json_loads |
+| Stdlib | first, last, rev, uniq, contains, replace, … |
+| Density | pipes, comprehensions, short keywords |
 
 ## Run
 
