@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Tok Language - Version 0.5
+Tok Language - Version 0.6
 Ultra-token-efficient experimental language.
 Python bootstrap. Language aims for higher density than Python.
 """
@@ -10,11 +10,12 @@ import re
 import os
 from typing import Any, Dict, List, Optional
 
-VERSION = "0.5"
+VERSION = "0.6"
 
 
 class TokError(Exception):
     def __init__(self, msg: str, line: int = 0):
+        self.line = line
         super().__init__(f"Line {line}: {msg}" if line else msg)
 
 
@@ -57,6 +58,7 @@ class Interpreter:
     def __init__(self):
         self.global_env = Environment()
         self.env = self.global_env
+        self.current_line = 0
         self._builtins()
 
     def _builtins(self):
@@ -80,6 +82,12 @@ class Interpreter:
         g.define("lower", lambda s: str(s).lower())
         g.define("split", lambda s, sep=" ": str(s).split(sep))
         g.define("join", lambda sep, xs: str(sep).join(str(x) for x in xs))
+        g.define("filter", lambda pred, xs: [x for x in xs if pred(x)])
+        g.define("sum", sum)
+        g.define("min", min)
+        g.define("max", max)
+        g.define("abs", abs)
+        g.define("sorted", sorted)
 
     def eval_expr(self, expr: str, env: Optional[Environment] = None) -> Any:
         env = env or self.env
@@ -88,14 +96,16 @@ class Interpreter:
             return None
 
         if " | " in expr:
-            parts = expr.split(" | ", 1)
-            left = self.eval_expr(parts[0].strip(), env)
-            right = parts[1].strip()
-            if re.match(r"^[a-zA-Z_]\w*$", right):
-                return self._call(right, [left], env)
-            env2 = Environment(env)
-            env2.define("_", left)
-            return self.eval_expr(right, env2)
+            parts = [p.strip() for p in expr.split(" | ")]
+            val = self.eval_expr(parts[0], env)
+            for part in parts[1:]:
+                if re.match(r"^[a-zA-Z_]\w*$", part):
+                    val = self._call(part, [val], env)
+                else:
+                    env2 = Environment(env)
+                    env2.define("_", val)
+                    val = self.eval_expr(part, env2)
+            return val
 
         if len(expr) >= 2 and expr[0] in "\"'" and expr[-1] == expr[0]:
             return expr[1:-1]
@@ -121,7 +131,7 @@ class Interpreter:
             try:
                 return obj[key]
             except Exception as e:
-                raise TokError(f"Index error: {e}")
+                raise TokError(f"Index error: {e}", self.current_line)
 
         m = re.match(r"^([a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)*)\.([a-zA-Z_]\w*)$", expr)
         if m:
@@ -163,7 +173,7 @@ class Interpreter:
         if expr.startswith("not "):
             return not self.eval_expr(expr[4:].strip(), env)
 
-        parts = expr.split()
+        parts = self._smart_split(expr)
         if parts:
             try:
                 val = env.get(parts[0])
@@ -176,7 +186,32 @@ class Interpreter:
         try:
             return env.get(expr)
         except TokError:
-            raise TokError(f"Unknown: {expr}")
+            raise TokError(f"Unknown: {expr}", self.current_line)
+
+    def _smart_split(self, s: str) -> List[str]:
+        parts, cur, in_str = [], [], None
+        i = 0
+        while i < len(s):
+            c = s[i]
+            if in_str:
+                cur.append(c)
+                if c == in_str and (i == 0 or s[i-1] != "\\"):
+                    in_str = None
+                i += 1
+                continue
+            if c in "\"'":
+                in_str = c
+                cur.append(c)
+            elif c.isspace() and not in_str:
+                if cur:
+                    parts.append("".join(cur))
+                    cur = []
+            else:
+                cur.append(c)
+            i += 1
+        if cur:
+            parts.append("".join(cur))
+        return parts
 
     def _eval_dict(self, inner: str, env: Environment) -> dict:
         if not inner:
@@ -184,7 +219,7 @@ class Interpreter:
         result = {}
         for part in self._split(inner):
             if ":" not in part:
-                raise TokError(f"Bad dict entry: {part}")
+                raise TokError(f"Bad dict entry: {part}", self.current_line)
             k_s, v_s = part.split(":", 1)
             result[self.eval_expr(k_s.strip(), env)] = self.eval_expr(v_s.strip(), env)
         return result
@@ -224,12 +259,12 @@ class Interpreter:
         try:
             fn = env.get(name)
         except TokError:
-            raise TokError(f"Undefined function '{name}'")
+            raise TokError(f"Undefined function '{name}'", self.current_line)
         if isinstance(fn, TokFunction):
             return fn(self, args)
         if callable(fn):
             return fn(*args)
-        raise TokError(f"'{name}' not callable")
+        raise TokError(f"'{name}' not callable", self.current_line)
 
     def execute_block(self, lines: List[str], env: Environment) -> Any:
         old = self.env
@@ -249,6 +284,7 @@ class Interpreter:
         return result
 
     def execute_line(self, line: str, all_lines: List[str], idx: int, env: Environment) -> Any:
+        self.current_line = idx + 1
         s = line.strip()
         if not s or s.startswith("#"):
             return None
@@ -312,16 +348,14 @@ class Interpreter:
 
     def _if(self, header: str, lines: List[str], idx: int, env: Environment) -> Any:
         if ":" not in header:
-            raise TokError("if needs :")
+            raise TokError("if needs :", self.current_line)
         cond_s, first = header.split(":", 1)
         cond_s = re.sub(r"^(i|if)\s+", "", cond_s).strip()
         cond = self.eval_expr(cond_s, env)
-
         body = []
         if first.strip():
             body.append(first.strip())
         body.extend(self._body(lines, idx))
-
         else_body = []
         base = len(lines[idx]) - len(lines[idx].lstrip())
         j = idx + 1
@@ -343,7 +377,6 @@ class Interpreter:
                     if efirst.strip():
                         else_body.append(efirst.strip())
                 else_body.extend(self._body(lines, j))
-
         if cond:
             return self.execute_block(body, env)
         if else_body:
@@ -352,14 +385,13 @@ class Interpreter:
 
     def _while(self, header: str, lines: List[str], idx: int, env: Environment) -> Any:
         if ":" not in header:
-            raise TokError("while needs :")
+            raise TokError("while needs :", self.current_line)
         cond_s, first = header.split(":", 1)
         cond_s = re.sub(r"^(w|while)\s+", "", cond_s).strip()
         body = []
         if first.strip():
             body.append(first.strip())
         body.extend(self._body(lines, idx))
-
         result = None
         for _ in range(100000):
             if not self.eval_expr(cond_s, env):
@@ -370,7 +402,7 @@ class Interpreter:
     def _for_range(self, header: str, lines: List[str], idx: int, env: Environment) -> Any:
         m = re.match(r"f\s+(\w+)\s*=\s*(-?\d+)\.\.(-?\d+)\s*:", header)
         if not m:
-            raise TokError("Use: f i = 1..5:")
+            raise TokError("Use: f i = 1..5:", self.current_line)
         var, a, b = m.group(1), int(m.group(2)), int(m.group(3))
         body = self._body(lines, idx)
         result = None
@@ -383,7 +415,7 @@ class Interpreter:
     def _for_in(self, header: str, lines: List[str], idx: int, env: Environment) -> Any:
         m = re.match(r"f\s+(\w+)\s+in\s+(.+):", header)
         if not m:
-            raise TokError("Use: f x in xs:")
+            raise TokError("Use: f x in xs:", self.current_line)
         var, iter_expr = m.group(1), m.group(2).strip()
         iterable = self.eval_expr(iter_expr, env)
         body = self._body(lines, idx)
@@ -395,11 +427,11 @@ class Interpreter:
 
     def _def_func(self, header: str, lines: List[str], idx: int, env: Environment) -> Any:
         if ":" not in header:
-            raise TokError("Function needs :")
+            raise TokError("Function needs :", self.current_line)
         left, first = header.split(":", 1)
         parts = re.sub(r"^f\s+", "", left).strip().split()
         if not parts:
-            raise TokError("Function needs name")
+            raise TokError("Function needs name", self.current_line)
         fname, params = parts[0], parts[1:]
         body = []
         if first.strip():
