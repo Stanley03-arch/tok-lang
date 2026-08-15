@@ -1,29 +1,30 @@
-# Tok v0.4
+# Tok v0.5
 
-p "Tok v0.4"
+p "Tok v0.5"
 
-nums = [10, 20, 30, 40]
-p nums
+nums = [1, 2, 3, 4]
 p nums[0]
-p nums[2]
 nums[1] = 99
 p nums
 
-person = {"name": "Tok", "ver": 4}
-p person
-p person["name"]
-p person.name
+# pipe (density win)
+p "hello" | upper
+p [1, 2, 3] | len
 
+# for-in
 f x in nums:
   p x
 
+# file I/O (use parentheses for multiple args)
+write("tok_test.txt", "Hello from Tok v0.5")
+p read("tok_test.txt")
+p exists("tok_test.txt")
+
+person = {"name": "Tok", "ver": 5}
+p person.name
+
 f add a b:
   a + b
-p add 5 7
-
-n = 0
-w n < 3:
-  p n
-  n = n + 1
+p add 10 20
 
 p "done"

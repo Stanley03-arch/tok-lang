@@ -2,25 +2,22 @@
 
 **Tok** — experimental ultra-token-efficient language for AI-assisted development.
 
-> **Version 0.4**
+> **Version 0.5**
 
 ## Features
 
-| Feature              | Example                          |
-|----------------------|----------------------------------|
-| Print                | `p "hi"`                         |
-| Variables            | `x = 10`                         |
-| Lists                | `nums = [1, 2, 3]`               |
-| Dicts                | `d = {"a": 1}`                   |
-| Indexing             | `nums[0]`  `d["key"]`            |
-| Dot access (dicts)   | `d.name`                         |
-| Indexed assign       | `nums[1] = 99`                   |
-| If / else            | `i x > 5:` … `e:`                |
-| For range            | `f i = 1..5:`                    |
-| For-in               | `f x in xs:`                     |
-| While                | `w n < 10:`                      |
-| Functions            | `f add a b:` …                   |
-| Builtins             | `len`, `str`, `int`, `type`…     |
+| Feature              | Example                              |
+|----------------------|--------------------------------------|
+| Print                | `p "hi"`                             |
+| Lists + indexing     | `nums[0]`  `nums[1] = 99`            |
+| Dicts + dot access   | `d.name`  `d["key"]`                 |
+| If / else            | `i x > 5:` … `e:`                    |
+| For range / for-in   | `f i = 1..5:`  `f x in xs:`          |
+| While                | `w n < 10:`                          |
+| Functions            | `f add a b:` …                       |
+| **Pipe**             | `"hello" \| upper`  `[1,2,3] \| len` |
+| File I/O             | `write("f.txt", data)`  `read("f.txt")` |
+| String helpers       | `upper`, `lower`, `split`, `join`    |
 
 ## Run
 
@@ -29,30 +26,26 @@ python tok.py examples/hello.tok
 python tok.py          # REPL
 ```
 
-## Example
+## Density example
 
 ```tok
-nums = [10, 20, 30]
-p nums[1]
-nums[0] = 99
+p "hello" | upper          # HELLO
+p [1, 2, 3] | len          # 3
 
-d = {"lang": "Tok", "ver": 4}
-p d.name
-
-f x in nums:
-  p x
+write("out.txt", "data")
+p read("out.txt")
 ```
 
 ## Goals
 
-- Higher token density than Python (better for AI)
-- Fast to write
-- Growing power over time
+- Higher token density than Python
+- Fast to write, AI-friendly
+- Growing capability
 
 ## Reality
 
-Runtime is still Python → execution speed is not better than Python yet.  
-Language density and AI-friendliness are the current focus.
+Still Python-powered under the hood → not faster in raw speed yet.  
+Focus remains language density and practical power.
 
 ## License
 
