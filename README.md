@@ -2,32 +2,49 @@
 
 **Tok** — experimental ultra-token-efficient language for AI-assisted development.
 
-> **Version 0.7**
+> **Version 0.8**
 
-## New in 0.7
+## Highlights
 
-- **Modules / import** — `import examples/math`
-- **List comprehensions** — `[x*2 for x in nums]` and with `if`
-- **Records / classes** — `record Point x y:`
-- **Agent primitives** — `agent`, `tool`, `plan`, `remember`, `run_agent`
-- **String interpolation** — `"Hello {name} v{ver}"`
+```tok
+# List comprehensions
+p [x*10 for x in nums if x > 2]
 
-## Full feature set
+# String interpolation
+p "Running {lang} v0.8"
 
-| Area              | Syntax / Example                          |
-|-------------------|-------------------------------------------|
-| Print             | `p "hi"`                                  |
-| Lists + index     | `nums[0]`  `nums[1]=99`                   |
-| Dicts + dot       | `d.name`                                  |
-| Comprehensions    | `[x*2 for x in xs if x>0]`                |
-| Pipe              | `xs \| sorted \| sum`                     |
-| Records           | `record Point x y:`  `pt = Point(1,2)`    |
-| Modules           | `import mymod`                            |
-| Agents            | `a = agent("Name", "goal")`               |
-| String interp     | `"Hi {name}"`                             |
-| Control           | `i`/`e`, `w`, `f i=1..n`, `f x in xs`     |
-| Functions         | `f add a b:`                              |
-| File I/O          | `read` / `write` / `exists`               |
+# Records
+record Person name age:
+  pass
+bob = Person("Bob", 30)
+
+# Agents
+a = agent("Helper", "answer questions")
+remember(a, "user likes density")
+add_tool(a, tool("search"))
+p run_agent(a)
+
+# Modules
+import examples/math
+p square(6)
+
+# Pipes
+p nums | sum
+```
+
+## Feature set
+
+| Area            | Support |
+|-----------------|---------|
+| Data            | lists, dicts, indexing, records |
+| Comprehensions  | `[x for x in xs if cond]` |
+| Control         | if/else, while, for-range, for-in |
+| Functions       | multi-arg, multi-line |
+| Modules         | `import` |
+| Agents          | agent, tool, remember, add_tool, run_agent, plan |
+| Strings         | interpolation `{name}`, upper/lower |
+| Density         | pipe `\|`, short keywords |
+| I/O             | read / write / exists |
 
 ## Run
 
@@ -36,9 +53,10 @@ python tok.py examples/hello.tok
 python tok.py          # REPL
 ```
 
-## Density focus
+## Goals
 
-Tok aims for higher token density than Python so AI generation and fine-tuning are cheaper and faster. The runtime is still Python; the language design is what we optimize.
+Higher token density than Python for AI generation and fine-tuning.  
+Runtime is still Python; language design is the focus.
 
 ## License
 

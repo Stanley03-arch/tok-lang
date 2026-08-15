@@ -1,41 +1,29 @@
-# Tok v0.7 - all new features
+# Tok v0.8
 
-p "=== Tok v0.7 ==="
+p "=== Tok v0.8 ==="
 
-# 1. List comprehensions (dense)
 nums = [1, 2, 3, 4, 5]
-p [x * 2 for x in nums]
-p [x for x in nums if x > 2]
+p [x * 10 for x in nums if x > 2]
+p nums | sum
 
-# map with named function
-f sq n:
-  n * n
-p map(sq, nums)
+lang = "Tok"
+p "Running {lang} v0.8"
 
-# 2. String interpolation
-name = "Tok"
-ver = 7
-p "Hello {name} v{ver}"
-
-# 3. Records / classes
-record Point x y:
+record Person name age:
   pass
-pt = Point(10, 20)
-p pt
-p pt.x
+bob = Person("Bob", 30)
+p bob.name
 
-# 4. Agent primitives
-a = agent("Researcher", "find papers")
-p a
-remember(a, "paper1")
+a = agent("Helper", "answer questions")
+remember(a, "user likes density")
+add_tool(a, tool("search"))
 p run_agent(a)
 
-# 5. Modules / import
 import examples/math
-p square(5)
-p cube(3)
+p square(6)
 
-# classic pipe
-p [3,1,4] | sorted | sum
+f double n:
+  n * 2
+p map(double, [1, 2, 3])
 
 p "=== done ==="
