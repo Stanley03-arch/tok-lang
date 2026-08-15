@@ -1,34 +1,33 @@
-# Tok v1.2
+# Tok v1.3
 
-p "=== Tok v1.2 ==="
+p "=== Tok v1.3 ==="
+p version()
 
-p contains([1,2,3], 2)
-p json_dumps({"v": 1.2})
+# assert
+assert 1 + 1 == 2
+p "assert ok"
 
 try:
-  x = 1 / 0
+  assert 1 == 0
 catch e:
-  p "caught"
+  p "caught bad assert"
 
-record Person name:
-  f greet:
-    "Hi " + self.name
-p Person("Tok").greet()
+# core still works
+record Point x y:
+  f sum:
+    self.x + self.y
+p Point(3, 4).sum()
 
-f search q:
-  "found:" + q
-f summarize q:
-  "summary:" + q
+f double n:
+  n * 2
+p map(double, [1, 2, 3])
 
-a = agent("Bot", "research")
-add_tool(a, tool("search", search))
-add_tool(a, tool("summarize", summarize))
-p run_agent(a, "density")
-p run_steps(a, ["density", "tokens"])
+p [x * 10 for x in [1, 2, 3] if x > 1]
 
-write("tok_tmp.txt", "hello from tok")
-p read("tok_tmp.txt")
-append("tok_tmp.txt", "!")
-p read("tok_tmp.txt")
+a = agent("T", "test")
+f echo q:
+  "echo:" + q
+add_tool(a, tool("echo", echo))
+p run_agent(a, "hi")
 
 p "=== done ==="
