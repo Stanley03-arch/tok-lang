@@ -2,27 +2,32 @@
 
 **Tok** — experimental ultra-token-efficient language for AI-assisted development.
 
-> **Version 0.6**
+> **Version 0.7**
 
-## Highlights
+## New in 0.7
 
-```tok
-p "hello" | upper | lower          # pipe chains
-p [5,1,8,3] | sorted | sum         # denser data flow
-write "out.txt" "data"             # space args now better
-p read "out.txt"
-```
+- **Modules / import** — `import examples/math`
+- **List comprehensions** — `[x*2 for x in nums]` and with `if`
+- **Records / classes** — `record Point x y:`
+- **Agent primitives** — `agent`, `tool`, `plan`, `remember`, `run_agent`
+- **String interpolation** — `"Hello {name} v{ver}"`
 
-## Feature Summary
+## Full feature set
 
-| Area            | Support                                      |
-|-----------------|----------------------------------------------|
-| Data            | lists, dicts, indexing, dot access           |
-| Control         | if/else, while, for-range, for-in            |
-| Functions       | multi-line, params, return                   |
-| Density         | pipe `\|`, short keywords (`p`,`i`,`f`,`w`)  |
-| I/O             | read / write / exists                        |
-| Helpers         | upper, lower, sorted, sum, max, min, filter… |
+| Area              | Syntax / Example                          |
+|-------------------|-------------------------------------------|
+| Print             | `p "hi"`                                  |
+| Lists + index     | `nums[0]`  `nums[1]=99`                   |
+| Dicts + dot       | `d.name`                                  |
+| Comprehensions    | `[x*2 for x in xs if x>0]`                |
+| Pipe              | `xs \| sorted \| sum`                     |
+| Records           | `record Point x y:`  `pt = Point(1,2)`    |
+| Modules           | `import mymod`                            |
+| Agents            | `a = agent("Name", "goal")`               |
+| String interp     | `"Hi {name}"`                             |
+| Control           | `i`/`e`, `w`, `f i=1..n`, `f x in xs`     |
+| Functions         | `f add a b:`                              |
+| File I/O          | `read` / `write` / `exists`               |
 
 ## Run
 
@@ -31,16 +36,9 @@ python tok.py examples/hello.tok
 python tok.py          # REPL
 ```
 
-## Goals
+## Density focus
 
-- Higher token density than Python (AI-friendly)
-- Fast to write
-- Practical power that grows over time
-
-## Reality
-
-Runtime is still Python. Execution speed is not better than Python yet.  
-Language density and usability are the current focus.
+Tok aims for higher token density than Python so AI generation and fine-tuning are cheaper and faster. The runtime is still Python; the language design is what we optimize.
 
 ## License
 

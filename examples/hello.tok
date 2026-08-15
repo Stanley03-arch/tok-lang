@@ -1,24 +1,41 @@
-# Tok v0.6
+# Tok v0.7 - all new features
 
-p "Tok v0.6"
+p "=== Tok v0.7 ==="
 
-# better space args + pipe chains
-p "hello world" | upper | lower
-nums = [5, 1, 8, 3]
-p nums | sorted
-p nums | sum
-p nums | max
+# 1. List comprehensions (dense)
+nums = [1, 2, 3, 4, 5]
+p [x * 2 for x in nums]
+p [x for x in nums if x > 2]
 
-# space-separated multi-arg now works better
-write "out.txt" "Hello from Tok v0.6"
-p read "out.txt"
-p exists "out.txt"
+# map with named function
+f sq n:
+  n * n
+p map(sq, nums)
 
-f x in [10, 20, 30]:
-  p x
+# 2. String interpolation
+name = "Tok"
+ver = 7
+p "Hello {name} v{ver}"
 
-f double n:
-  n * 2
-p double 21
+# 3. Records / classes
+record Point x y:
+  pass
+pt = Point(10, 20)
+p pt
+p pt.x
 
-p "done"
+# 4. Agent primitives
+a = agent("Researcher", "find papers")
+p a
+remember(a, "paper1")
+p run_agent(a)
+
+# 5. Modules / import
+import examples/math
+p square(5)
+p cube(3)
+
+# classic pipe
+p [3,1,4] | sorted | sum
+
+p "=== done ==="

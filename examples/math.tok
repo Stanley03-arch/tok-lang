@@ -1,0 +1,6 @@
+# simple module
+f square n:
+  n * n
+
+f cube n:
+  n * n * n
