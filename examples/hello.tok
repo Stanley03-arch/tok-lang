@@ -1,55 +1,38 @@
-# Tok v1.0
+# Tok v1.1
 
-p "=== Tok v1.0 ==="
+p "=== Tok v1.1 ==="
 
-# --- Standard library growth ---
-nums = [3, 1, 4, 1, 5]
-p first(nums)
-p last(nums)
-p rev(nums)
-p uniq(nums)
-p keys({"a": 1, "b": 2})
-p any([0, 0, 1])
-p all([1, 1, 1])
+# expanded stdlib
+p contains([1,2,3], 2)
+p replace("hello world", "world", "Tok")
+p startswith("TokLang", "Tok")
+p json_dumps({"lang": "Tok", "ver": 1.1})
+js = json_dumps({"a": 1})
+p json_loads(js)
 
-# --- Error handling ---
+# try/catch
 try:
-  p "inside try"
-  bad = 1 / 0
+  x = 1 / 0
 catch e:
-  p "caught:"
-  p e
+  p "ok caught"
 
-# --- OOP with methods ---
-record Person name age:
+# OOP
+record Person name:
   f greet:
-    "Hi, I am " + self.name
-  f birthday:
-    self.age + 1
+    "Hi " + self.name
 
-bob = Person("Bob", 30)
-p bob.greet()
-p bob.birthday()
-
-# Inheritance
 record Worker(Person) name job:
   f greet:
     "Worker " + self.name
 
-w = Worker("Ann", "engineer")
-p w.name
-p w.job
-p w.greet()
+p Worker("Ann", "dev").greet()
 
-# --- Agents with tools ---
-a = agent("Researcher", "find info")
-remember(a, "prefer short answers")
-add_tool(a, tool("echo"))
-p run_agent(a, "tok language")
+# Agents with real Tok function as tool
+f search q:
+  "results for: " + q
 
-# density
-p [x * 2 for x in [1, 2, 3]]
-name = "Tok"
-p "Hello {name}"
+a = agent("Bot", "search")
+add_tool(a, tool("search", search))
+p run_agent(a, "token density")
 
 p "=== done ==="

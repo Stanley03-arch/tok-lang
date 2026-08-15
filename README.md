@@ -2,61 +2,47 @@
 
 **Tok** — experimental ultra-token-efficient language for AI-assisted development.
 
-> **Version 1.0**
+> **Version 1.1**
 
-## What's new in 1.0
-
-1. **Actual tool execution inside agents**
-2. **Inheritance / better OOP**
-3. **Standard library growth**
-4. **Error handling (`try` / `catch`)**
-
-## Examples
+## Highlights
 
 ```tok
-# Error handling
+# Stdlib
+p contains([1,2,3], 2)
+p replace("hello world", "world", "Tok")
+p json_dumps({"lang": "Tok"})
+
+# try/catch
 try:
-  bad = 1 / 0
+  x = 1 / 0
 catch e:
   p e
 
-# Records + methods + inheritance
-record Person name age:
-  f greet:
-    "Hi, I am " + self.name
-
+# OOP + inheritance
 record Worker(Person) name job:
   f greet:
     "Worker " + self.name
 
-w = Worker("Ann", "engineer")
-p w.greet()
-
-# Agents
-a = agent("Researcher", "find info")
-add_tool(a, tool("echo"))
-p run_agent(a, "query")
-
-# Stdlib
-p first([1,2,3])
-p uniq([1,1,2])
-p keys({"a":1})
+# Agents with real Tok tools
+f search q:
+  "results for: " + q
+a = agent("Bot", "search")
+add_tool(a, tool("search", search))
+p run_agent(a, "token density")
+# → results=[{'search': 'results for: token density'}]
 ```
 
-## Full feature set
+## Feature set
 
 | Area | Support |
 |------|---------|
-| Records + methods + inheritance | `record Child(Parent) fields:` |
-| Agents + tools | agent, tool, add_tool, remember, run_agent |
-| try / catch | `try:` … `catch e:` |
-| Comprehensions | `[x for x in xs if cond]` |
-| Modules | `import` |
-| Pipes | `xs \| sorted \| sum` |
-| Strings | `"Hi {name}"` |
-| Stdlib | first, last, rev, uniq, keys, any, all, … |
-| Control | if/else, while, for, functions |
-| I/O | read / write / exists |
+| Records + methods + inheritance | ✅ |
+| Agents + **executable Tok tools** | ✅ |
+| try / catch | ✅ |
+| JSON | `json_dumps` / `json_loads` |
+| Stdlib | first, last, rev, uniq, keys, contains, replace, slice, … |
+| Comprehensions, pipes, modules | ✅ |
+| String interpolation | `"Hi {name}"` |
 
 ## Run
 
