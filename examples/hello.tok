@@ -1,0 +1,18 @@
+# Tok v0.1 example
+
+p "Hello from Tok v0.1"
+
+x = 10
+p x
+
+p x + 5
+p x * 2
+
+i x > 5:
+  p "x is big"
+
+f add a b: a + b
+
+p add 3 4
+
+p "Done"
