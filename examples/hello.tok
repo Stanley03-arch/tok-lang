@@ -1,34 +1,55 @@
-# Tok v0.9
+# Tok v1.0
 
-p "=== Tok v0.9 ==="
+p "=== Tok v1.0 ==="
 
-# Records with methods
+# --- Standard library growth ---
+nums = [3, 1, 4, 1, 5]
+p first(nums)
+p last(nums)
+p rev(nums)
+p uniq(nums)
+p keys({"a": 1, "b": 2})
+p any([0, 0, 1])
+p all([1, 1, 1])
+
+# --- Error handling ---
+try:
+  p "inside try"
+  bad = 1 / 0
+catch e:
+  p "caught:"
+  p e
+
+# --- OOP with methods ---
 record Person name age:
   f greet:
     "Hi, I am " + self.name
-  f older n:
-    self.age + n
+  f birthday:
+    self.age + 1
 
 bob = Person("Bob", 30)
-p bob.name
 p bob.greet()
-p bob.older(5)
+p bob.birthday()
 
-# Agents
-a = agent("Helper", "help users")
-remember(a, "prefers density")
-add_tool(a, tool("search"))
-p run_agent(a)
+# Inheritance
+record Worker(Person) name job:
+  f greet:
+    "Worker " + self.name
 
-# Classic features still work
-nums = [1, 2, 3, 4]
-p [x * 2 for x in nums if x > 1]
-p nums | sum
+w = Worker("Ann", "engineer")
+p w.name
+p w.job
+p w.greet()
 
-lang = "Tok"
-p "Hello from {lang}"
+# --- Agents with tools ---
+a = agent("Researcher", "find info")
+remember(a, "prefer short answers")
+add_tool(a, tool("echo"))
+p run_agent(a, "tok language")
 
-import examples/math
-p square(7)
+# density
+p [x * 2 for x in [1, 2, 3]]
+name = "Tok"
+p "Hello {name}"
 
 p "=== done ==="

@@ -2,48 +2,61 @@
 
 **Tok** — experimental ultra-token-efficient language for AI-assisted development.
 
-> **Version 0.9**
+> **Version 1.0**
 
-## Highlights
+## What's new in 1.0
+
+1. **Actual tool execution inside agents**
+2. **Inheritance / better OOP**
+3. **Standard library growth**
+4. **Error handling (`try` / `catch`)**
+
+## Examples
 
 ```tok
-# Records with methods
+# Error handling
+try:
+  bad = 1 / 0
+catch e:
+  p e
+
+# Records + methods + inheritance
 record Person name age:
   f greet:
     "Hi, I am " + self.name
-  f older n:
-    self.age + n
 
-bob = Person("Bob", 30)
-p bob.greet()          # Hi, I am Bob
-p bob.older(5)         # 35
+record Worker(Person) name job:
+  f greet:
+    "Worker " + self.name
+
+w = Worker("Ann", "engineer")
+p w.greet()
 
 # Agents
-a = agent("Helper", "help users")
-remember(a, "prefers density")
-add_tool(a, tool("search"))
-p run_agent(a)
+a = agent("Researcher", "find info")
+add_tool(a, tool("echo"))
+p run_agent(a, "query")
 
-# Comprehensions + pipes
-p [x*2 for x in nums if x > 1]
-p nums | sum
-
-# Modules
-import examples/math
+# Stdlib
+p first([1,2,3])
+p uniq([1,1,2])
+p keys({"a":1})
 ```
 
-## Feature set
+## Full feature set
 
-| Area            | Support |
-|-----------------|---------|
-| Records + methods | `record Person name:` + `f method:` |
-| Agents          | agent, tool, remember, add_tool, run_agent |
-| Comprehensions  | `[x for x in xs if cond]` |
-| Modules         | `import` |
-| Pipes           | `xs \| sorted \| sum` |
-| Strings         | `"Hi {name}"` interpolation |
-| Control         | if/else, while, for, functions |
-| I/O             | read / write / exists |
+| Area | Support |
+|------|---------|
+| Records + methods + inheritance | `record Child(Parent) fields:` |
+| Agents + tools | agent, tool, add_tool, remember, run_agent |
+| try / catch | `try:` … `catch e:` |
+| Comprehensions | `[x for x in xs if cond]` |
+| Modules | `import` |
+| Pipes | `xs \| sorted \| sum` |
+| Strings | `"Hi {name}"` |
+| Stdlib | first, last, rev, uniq, keys, any, all, … |
+| Control | if/else, while, for, functions |
+| I/O | read / write / exists |
 
 ## Run
 
