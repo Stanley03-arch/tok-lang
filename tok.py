@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-Tok Language - Version 0.4
+Tok Language - Version 0.5
 Ultra-token-efficient experimental language.
 Python bootstrap. Language aims for higher density than Python.
 """
 
 import sys
 import re
+import os
 from typing import Any, Dict, List, Optional
 
-VERSION = "0.4"
+VERSION = "0.5"
 
 
 class TokError(Exception):
@@ -72,12 +73,29 @@ class Interpreter:
         g.define("range", range)
         g.define("type", lambda x: type(x).__name__)
         g.define("print", print)
+        g.define("read", lambda path: open(path, encoding="utf-8").read())
+        g.define("write", lambda path, data: open(path, "w", encoding="utf-8").write(str(data)))
+        g.define("exists", os.path.exists)
+        g.define("upper", lambda s: str(s).upper())
+        g.define("lower", lambda s: str(s).lower())
+        g.define("split", lambda s, sep=" ": str(s).split(sep))
+        g.define("join", lambda sep, xs: str(sep).join(str(x) for x in xs))
 
     def eval_expr(self, expr: str, env: Optional[Environment] = None) -> Any:
         env = env or self.env
         expr = expr.strip()
         if not expr:
             return None
+
+        if " | " in expr:
+            parts = expr.split(" | ", 1)
+            left = self.eval_expr(parts[0].strip(), env)
+            right = parts[1].strip()
+            if re.match(r"^[a-zA-Z_]\w*$", right):
+                return self._call(right, [left], env)
+            env2 = Environment(env)
+            env2.define("_", left)
+            return self.eval_expr(right, env2)
 
         if len(expr) >= 2 and expr[0] in "\"'" and expr[-1] == expr[0]:
             return expr[1:-1]
