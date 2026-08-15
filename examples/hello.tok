@@ -1,32 +1,36 @@
-# Tok v1.4
+# Tok v1.5
 
-p "=== Tok v1.4 ==="
+p "=== Tok v1.5 ==="
 p version()
 
-# break in while
+# elif chain
+x = 2
+i x == 1:
+  p "one"
+elif x == 2:
+  p "two"
+elif x == 3:
+  p "three"
+e:
+  p "other"
+
+x = 9
+i x < 5:
+  p "small"
+elif x < 10:
+  p "medium"
+e:
+  p "large"
+
+# break still works
 n = 0
-w n < 10:
+w n < 5:
   n = n + 1
   i n == 3:
     break
   p n
-p "after while"
 
-# continue in for
-f i = 1..5:
-  i i == 3:
-    continue
-  p i
-
-assert true
-p "assert ok"
-
-f echo q:
-  "got:" + q
-a = agent("A", "t")
-add_tool(a, tool("echo", echo))
-p run_agent(a, "hi")
-
-p [x for x in [1,2,3,4] if x > 2]
+assert 1 + 1 == 2
+p "ok"
 
 p "=== done ==="
