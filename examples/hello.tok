@@ -1,18 +1,25 @@
-# Tok v0.1 example
+# Tok v0.2 example
 
-p "Hello from Tok v0.1"
+p "Hello from Tok v0.2"
 
 x = 10
 p x
-
 p x + 5
 p x * 2
 
 i x > 5:
   p "x is big"
 
-f add a b: a + b
+f i = 1..4:
+  p i
+
+f add a b:
+  a + b
 
 p add 3 4
+
+nums = [10, 20, 30]
+p nums
+p len(nums)
 
 p "Done"

@@ -1,30 +1,27 @@
 # Tok Language
 
-**Tok** is an experimental, ultra-token-efficient programming language designed for AI-assisted development, high information density, and rapid expression of complex ideas.
+**Tok** is an experimental, ultra-token-efficient programming language designed for AI-assisted development and high information density.
 
-> **Status: Version 0.1 (First Prototype)**  
-> This is the very first working foundation. It is intentionally small and realistic.
+> **Status: Version 0.2**  
+> Python bootstrap interpreter. The *language* aims to be denser and more AI-friendly than Python.
 
-## Goals (Long-term Vision)
+## Goals
 
-- Extremely high token efficiency (better density than Python for AI code generation and fine-tuning)
-- Concise, expressive syntax
-- Strong support for agents and orchestration
-- Systems-oriented capabilities over time
-- Interop with existing high-performance runtimes
+- Extremely high token efficiency (better density than Python for AI code generation)
+- Concise syntax for faster coding
+- Growing support for agents and complex tasks
+- Practical bootstrap (currently Python) while the language itself improves
 
-**Important reality check**: Building a language that is simultaneously the best in the world at OS kernels, 3D engines, custom web infrastructure, AGI, cybersecurity, cloud, mobile, and every other domain is not feasible in one project. Tok starts small and grows deliberately.
+## Current Features (v0.2)
 
-## Current Features (v0.1)
-
-- Simple expressions and arithmetic
-- Variables
-- `p` for print
-- Basic `i` / `e` conditionals
-- Simple `f` loops (range-style) - limited
-- Functions with `f name args: body` (single-line for now)
-- Python interop via `py` (planned expansion)
-- Runs as a Python-based interpreter
+- `p` / `print` for output
+- Variables and arithmetic
+- Lists: `[1, 2, 3]`
+- Conditionals: `i cond:` with indented blocks
+- Simple for loops: `f i = 1..5:`
+- Functions: `f name a b:` with indented body
+- Builtins: `len`, `str`, `int`, `float`, `list`, `range`
+- REPL mode
 
 ## Quick Start
 
@@ -32,7 +29,7 @@
 python tok.py examples/hello.tok
 ```
 
-Or run the REPL:
+REPL:
 
 ```bash
 python tok.py
@@ -48,24 +45,25 @@ p x + 5
 
 i x > 5:
   p "big"
-e:
-  p "small"
 
-f add a b: a + b
+f i = 1..3:
+  p i
 
-p add 3 4
+f add a b:
+  a + b
+
+p add 7 8
+
+nums = [1, 2, 3]
+p len(nums)
 ```
 
-## Project Structure
+## Reality Check
 
-- `tok.py` – Main interpreter / entry point
-- `examples/` – Sample Tok programs
-- `docs/` – Design notes (growing)
+Tok is **not** currently faster than Python in execution speed (it runs on Python).  
+It **is** designed to be denser and more pleasant for AI-assisted coding.  
+Full performance and advanced features come later.
 
 ## License
 
 MIT
-
-## Contributing
-
-This is the first public version. Feedback, ideas, and realistic improvements are welcome. Please keep expectations grounded in what is actually buildable.
