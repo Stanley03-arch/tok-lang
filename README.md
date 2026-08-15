@@ -1,68 +1,63 @@
 # Tok Language
 
-**Tok** is an experimental, ultra-token-efficient programming language designed for AI-assisted development and high information density.
+**Tok** — experimental ultra-token-efficient language for AI-assisted development.
 
-> **Status: Version 0.2**  
-> Python bootstrap interpreter. The *language* aims to be denser and more AI-friendly than Python.
+> **Version 0.3**  
+> Python bootstrap. The language itself is designed to be denser than Python.
 
-## Goals
+## Features (v0.3)
 
-- Extremely high token efficiency (better density than Python for AI code generation)
-- Concise syntax for faster coding
-- Growing support for agents and complex tasks
-- Practical bootstrap (currently Python) while the language itself improves
+| Feature            | Syntax example                  |
+|--------------------|---------------------------------|
+| Print              | `p "hello"`                     |
+| Variables          | `x = 10`                        |
+| Lists              | `nums = [1, 2, 3]`              |
+| Dicts              | `d = {"a": 1, "b": 2}`          |
+| If / else          | `i x > 5:` … `e:`               |
+| For range          | `f i = 1..5:`                   |
+| While              | `w n < 10:`                     |
+| Functions          | `f add a b:` …                  |
+| Builtins           | `len`, `str`, `int`, `type`…    |
 
-## Current Features (v0.2)
-
-- `p` / `print` for output
-- Variables and arithmetic
-- Lists: `[1, 2, 3]`
-- Conditionals: `i cond:` with indented blocks
-- Simple for loops: `f i = 1..5:`
-- Functions: `f name a b:` with indented body
-- Builtins: `len`, `str`, `int`, `float`, `list`, `range`
-- REPL mode
-
-## Quick Start
+## Run
 
 ```bash
 python tok.py examples/hello.tok
-```
-
-REPL:
-
-```bash
-python tok.py
+python tok.py          # REPL
 ```
 
 ## Example
 
 ```tok
-p "Hello from Tok"
+p "Tok v0.3"
 
 x = 10
-p x + 5
-
 i x > 5:
   p "big"
+e:
+  p "small"
 
 f i = 1..3:
   p i
 
 f add a b:
   a + b
-
 p add 7 8
 
-nums = [1, 2, 3]
-p len(nums)
+d = {"lang": "Tok", "ver": 3}
+p d
 ```
 
-## Reality Check
+## Goals
 
-Tok is **not** currently faster than Python in execution speed (it runs on Python).  
-It **is** designed to be denser and more pleasant for AI-assisted coding.  
-Full performance and advanced features come later.
+- Higher token density than Python (better for AI generation & fine-tuning)
+- Fast to write
+- Growing agent / systems capabilities over time
+
+## Reality
+
+Current runtime is Python → not faster than Python in execution.  
+Language design targets density and AI friendliness first.
 
 ## License
 
