@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """
-Tok Language - Version 0.6
+Tok Language - Version 0.7
 Ultra-token-efficient experimental language.
-Python bootstrap. Language aims for higher density than Python.
+Adds: modules, denser map/comprehensions, records/classes,
+      agent primitives, better string formatting.
 """
 
 import sys
 import re
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable
 
-VERSION = "0.6"
+VERSION = "0.7"
 
 
 class TokError(Exception):
@@ -54,11 +55,34 @@ class TokFunction:
         return interp.execute_block(self.body, local)
 
 
+class TokRecord:
+    def __init__(self, fields: Dict[str, Any], methods: Optional[Dict[str, TokFunction]] = None):
+        self.fields = dict(fields)
+        self.methods = methods or {}
+
+    def __getattr__(self, name):
+        if name in self.fields:
+            return self.fields[name]
+        if name in self.methods:
+            return self.methods[name]
+        raise AttributeError(name)
+
+    def __setattr__(self, name, value):
+        if name in ("fields", "methods"):
+            object.__setattr__(self, name, value)
+        else:
+            self.fields[name] = value
+
+    def __repr__(self):
+        return f"Record({self.fields})"
+
+
 class Interpreter:
     def __init__(self):
         self.global_env = Environment()
         self.env = self.global_env
         self.current_line = 0
+        self.loaded_modules: set = set()
         self._builtins()
 
     def _builtins(self):
@@ -89,6 +113,41 @@ class Interpreter:
         g.define("abs", abs)
         g.define("sorted", sorted)
 
+        def _map(fn, xs):
+            if isinstance(fn, TokFunction):
+                return [fn(self, [x]) for x in xs]
+            return [fn(x) for x in xs]
+        g.define("map", _map)
+
+        def _fmt(template, **kwargs):
+            try:
+                return str(template).format(**kwargs)
+            except Exception:
+                return str(template)
+        g.define("fmt", _fmt)
+
+        def _agent(name, goal=""):
+            return {"type": "agent", "name": name, "goal": goal, "tools": [], "memory": []}
+        g.define("agent", _agent)
+
+        def _tool(name, fn=None):
+            return {"type": "tool", "name": name, "fn": fn}
+        g.define("tool", _tool)
+
+        def _plan(steps):
+            return {"type": "plan", "steps": list(steps)}
+        g.define("plan", _plan)
+
+        def _remember(agent, item):
+            if isinstance(agent, dict) and "memory" in agent:
+                agent["memory"].append(item)
+            return agent
+        g.define("remember", _remember)
+
+        def _run_agent(ag, *args):
+            return f"Agent[{ag.get('name','?')}] goal={ag.get('goal','')} tools={len(ag.get('tools',[]))} mem={len(ag.get('memory',[]))}"
+        g.define("run_agent", _run_agent)
+
     def eval_expr(self, expr: str, env: Optional[Environment] = None) -> Any:
         env = env or self.env
         expr = expr.strip()
@@ -107,8 +166,41 @@ class Interpreter:
                     val = self.eval_expr(part, env2)
             return val
 
+        m = re.match(r"^\[(.+)\s+for\s+(\w+)\s+in\s+(.+?)(?:\s+if\s+(.+))?\]$", expr)
+        if m:
+            body_e, var, iter_e, cond_e = m.group(1), m.group(2), m.group(3), m.group(4)
+            iterable = self.eval_expr(iter_e.strip(), env)
+            result = []
+            for item in iterable:
+                local = Environment(env)
+                local.define(var, item)
+                if cond_e is None or self.eval_expr(cond_e.strip(), local):
+                    result.append(self.eval_expr(body_e.strip(), local))
+            return result
+
+        if "->" in expr and not expr.startswith("f "):
+            left, right = expr.split("->", 1)
+            params = [p.strip() for p in left.split() if p.strip()]
+            body = right.strip()
+            def make_lambda(ps, bd, clos):
+                def lam(*args):
+                    local = Environment(clos)
+                    for p, a in zip(ps, args):
+                        local.define(p, a)
+                    return self.eval_expr(bd, local)
+                return lam
+            return make_lambda(params, body, env)
+
         if len(expr) >= 2 and expr[0] in "\"'" and expr[-1] == expr[0]:
-            return expr[1:-1]
+            s = expr[1:-1]
+            def repl(m):
+                key = m.group(1)
+                try:
+                    return str(env.get(key))
+                except TokError:
+                    return m.group(0)
+            s = re.sub(r"\{(\w+)\}", repl, s)
+            return s
 
         try:
             return float(expr) if "." in expr else int(expr)
@@ -137,6 +229,8 @@ class Interpreter:
         if m:
             base = self.eval_expr(m.group(1), env)
             attr = m.group(2)
+            if isinstance(base, TokRecord):
+                return getattr(base, attr)
             if isinstance(base, dict):
                 return base.get(attr)
             return getattr(base, attr, None)
@@ -289,6 +383,13 @@ class Interpreter:
         if not s or s.startswith("#"):
             return None
 
+        if s.startswith("import ") or s.startswith("use "):
+            mod = s.split(" ", 1)[1].strip().strip("\"'")
+            return self._import(mod, env)
+
+        if s.startswith("record ") or s.startswith("class "):
+            return self._def_record(s, all_lines, idx, env)
+
         if s.startswith("p ") or s.startswith("print "):
             val = self.eval_expr(s.split(" ", 1)[1], env)
             print(val)
@@ -328,6 +429,47 @@ class Interpreter:
             return self._def_func(s, all_lines, idx, env)
 
         return self.eval_expr(s, env)
+
+    def _import(self, mod: str, env: Environment):
+        path = mod if mod.endswith(".tok") else mod + ".tok"
+        if not os.path.exists(path):
+            for candidate in (path, os.path.join("examples", path), os.path.join(os.path.dirname(__file__) or ".", path)):
+                if os.path.exists(candidate):
+                    path = candidate
+                    break
+            else:
+                raise TokError(f"Module not found: {mod}", self.current_line)
+        if path in self.loaded_modules:
+            return None
+        self.loaded_modules.add(path)
+        with open(path, encoding="utf-8") as f:
+            source = f.read()
+        self.run(source)
+        return f"imported {path}"
+
+    def _def_record(self, header: str, lines: List[str], idx: int, env: Environment):
+        if ":" not in header:
+            raise TokError("record needs :", self.current_line)
+        left, first = header.split(":", 1)
+        parts = re.sub(r"^(record|class)\s+", "", left).strip().split()
+        if not parts:
+            raise TokError("record needs a name", self.current_line)
+        name = parts[0]
+        fields = parts[1:]
+        body = []
+        if first.strip():
+            body.append(first.strip())
+        body.extend(self._body(lines, idx))
+
+        def make_ctor(field_names, methods_body):
+            def ctor(*args):
+                data = {}
+                for i, f in enumerate(field_names):
+                    data[f] = args[i] if i < len(args) else None
+                return TokRecord(data)
+            return ctor
+        env.define(name, make_ctor(fields, body))
+        return None
 
     def _body(self, lines: List[str], idx: int) -> List[str]:
         body = []
@@ -451,7 +593,7 @@ class Interpreter:
                 continue
             try:
                 consumes = (
-                    s.startswith(("i ", "if ", "w ", "while ")) or
+                    s.startswith(("i ", "if ", "w ", "while ", "record ", "class ")) or
                     (s.startswith("f ") and (":" in s)) or
                     s.startswith(("e:", "else:", "e ", "else "))
                 )
