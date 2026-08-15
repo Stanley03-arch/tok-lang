@@ -2,48 +2,47 @@
 
 **Tok** — experimental ultra-token-efficient language for AI-assisted development.
 
-> **Version 0.8**
+> **Version 0.9**
 
 ## Highlights
 
 ```tok
-# List comprehensions
-p [x*10 for x in nums if x > 2]
-
-# String interpolation
-p "Running {lang} v0.8"
-
-# Records
+# Records with methods
 record Person name age:
-  pass
+  f greet:
+    "Hi, I am " + self.name
+  f older n:
+    self.age + n
+
 bob = Person("Bob", 30)
+p bob.greet()          # Hi, I am Bob
+p bob.older(5)         # 35
 
 # Agents
-a = agent("Helper", "answer questions")
-remember(a, "user likes density")
+a = agent("Helper", "help users")
+remember(a, "prefers density")
 add_tool(a, tool("search"))
 p run_agent(a)
 
+# Comprehensions + pipes
+p [x*2 for x in nums if x > 1]
+p nums | sum
+
 # Modules
 import examples/math
-p square(6)
-
-# Pipes
-p nums | sum
 ```
 
 ## Feature set
 
 | Area            | Support |
 |-----------------|---------|
-| Data            | lists, dicts, indexing, records |
+| Records + methods | `record Person name:` + `f method:` |
+| Agents          | agent, tool, remember, add_tool, run_agent |
 | Comprehensions  | `[x for x in xs if cond]` |
-| Control         | if/else, while, for-range, for-in |
-| Functions       | multi-arg, multi-line |
 | Modules         | `import` |
-| Agents          | agent, tool, remember, add_tool, run_agent, plan |
-| Strings         | interpolation `{name}`, upper/lower |
-| Density         | pipe `\|`, short keywords |
+| Pipes           | `xs \| sorted \| sum` |
+| Strings         | `"Hi {name}"` interpolation |
+| Control         | if/else, while, for, functions |
 | I/O             | read / write / exists |
 
 ## Run

@@ -1,29 +1,34 @@
-# Tok v0.8
+# Tok v0.9
 
-p "=== Tok v0.8 ==="
+p "=== Tok v0.9 ==="
 
-nums = [1, 2, 3, 4, 5]
-p [x * 10 for x in nums if x > 2]
-p nums | sum
-
-lang = "Tok"
-p "Running {lang} v0.8"
-
+# Records with methods
 record Person name age:
-  pass
+  f greet:
+    "Hi, I am " + self.name
+  f older n:
+    self.age + n
+
 bob = Person("Bob", 30)
 p bob.name
+p bob.greet()
+p bob.older(5)
 
-a = agent("Helper", "answer questions")
-remember(a, "user likes density")
+# Agents
+a = agent("Helper", "help users")
+remember(a, "prefers density")
 add_tool(a, tool("search"))
 p run_agent(a)
 
-import examples/math
-p square(6)
+# Classic features still work
+nums = [1, 2, 3, 4]
+p [x * 2 for x in nums if x > 1]
+p nums | sum
 
-f double n:
-  n * 2
-p map(double, [1, 2, 3])
+lang = "Tok"
+p "Hello from {lang}"
+
+import examples/math
+p square(7)
 
 p "=== done ==="
