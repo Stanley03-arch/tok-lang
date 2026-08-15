@@ -1,30 +1,24 @@
-# Tok v0.5
+# Tok v0.6
 
-p "Tok v0.5"
+p "Tok v0.6"
 
-nums = [1, 2, 3, 4]
-p nums[0]
-nums[1] = 99
-p nums
+# better space args + pipe chains
+p "hello world" | upper | lower
+nums = [5, 1, 8, 3]
+p nums | sorted
+p nums | sum
+p nums | max
 
-# pipe (density win)
-p "hello" | upper
-p [1, 2, 3] | len
+# space-separated multi-arg now works better
+write "out.txt" "Hello from Tok v0.6"
+p read "out.txt"
+p exists "out.txt"
 
-# for-in
-f x in nums:
+f x in [10, 20, 30]:
   p x
 
-# file I/O (use parentheses for multiple args)
-write("tok_test.txt", "Hello from Tok v0.5")
-p read("tok_test.txt")
-p exists("tok_test.txt")
-
-person = {"name": "Tok", "ver": 5}
-p person.name
-
-f add a b:
-  a + b
-p add 10 20
+f double n:
+  n * 2
+p double 21
 
 p "done"
