@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Tok Language - Version 0.3
+Tok Language - Version 0.4
 Ultra-token-efficient experimental language.
-Python bootstrap. The language aims for higher density than Python.
+Python bootstrap. Language aims for higher density than Python.
 """
 
 import sys
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-VERSION = "0.3"
+VERSION = "0.4"
 
 
 class TokError(Exception):
@@ -71,6 +71,7 @@ class Interpreter:
         g.define("dict", dict)
         g.define("range", range)
         g.define("type", lambda x: type(x).__name__)
+        g.define("print", print)
 
     def eval_expr(self, expr: str, env: Optional[Environment] = None) -> Any:
         env = env or self.env
@@ -95,19 +96,30 @@ class Interpreter:
         if expr.startswith("{") and expr.endswith("}"):
             return self._eval_dict(expr[1:-1].strip(), env)
 
+        m = re.match(r"^(.+)\[(.+)\]$", expr)
+        if m:
+            obj = self.eval_expr(m.group(1).strip(), env)
+            key = self.eval_expr(m.group(2).strip(), env)
+            try:
+                return obj[key]
+            except Exception as e:
+                raise TokError(f"Index error: {e}")
+
+        m = re.match(r"^([a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)*)\.([a-zA-Z_]\w*)$", expr)
+        if m:
+            base = self.eval_expr(m.group(1), env)
+            attr = m.group(2)
+            if isinstance(base, dict):
+                return base.get(attr)
+            return getattr(base, attr, None)
+
         m = re.match(r"^([a-zA-Z_][\w]*)\((.*)\)$", expr, re.DOTALL)
         if m:
             fname, args_s = m.group(1), m.group(2).strip()
             args = [self.eval_expr(a, env) for a in self._split(args_s)] if args_s else []
             return self._call(fname, args, env)
 
-        for ops in (
-            ("or",),
-            ("and",),
-            ("==", "!=", "<=", ">=", "<", ">"),
-            ("+", "-"),
-            ("*", "/", "%"),
-        ):
+        for ops in (("or",), ("and",), ("==", "!=", "<=", ">=", "<", ">"), ("+", "-"), ("*", "/", "%")):
             for op in ops:
                 if op in ("and", "or"):
                     parts = re.split(rf"\s+{op}\s+", expr, maxsplit=1)
@@ -156,9 +168,7 @@ class Interpreter:
             if ":" not in part:
                 raise TokError(f"Bad dict entry: {part}")
             k_s, v_s = part.split(":", 1)
-            k = self.eval_expr(k_s.strip(), env)
-            v = self.eval_expr(v_s.strip(), env)
-            result[k] = v
+            result[self.eval_expr(k_s.strip(), env)] = self.eval_expr(v_s.strip(), env)
         return result
 
     def _split(self, s: str) -> List[str]:
@@ -240,12 +250,22 @@ class Interpreter:
                 val = self.eval_expr(right.strip(), env)
                 env.set(name, val)
                 return val
+            m = re.match(r"^(.+)\[(.+)\]$", name)
+            if m:
+                obj = self.eval_expr(m.group(1).strip(), env)
+                key = self.eval_expr(m.group(2).strip(), env)
+                val = self.eval_expr(right.strip(), env)
+                obj[key] = val
+                return val
 
         if s.startswith("i ") or s.startswith("if "):
             return self._if(s, all_lines, idx, env)
 
         if s.startswith("w ") or s.startswith("while "):
             return self._while(s, all_lines, idx, env)
+
+        if s.startswith("f ") and " in " in s and ":" in s:
+            return self._for_in(s, all_lines, idx, env)
 
         if s.startswith("f ") and ".." in s:
             return self._for_range(s, all_lines, idx, env)
@@ -286,12 +306,20 @@ class Interpreter:
 
         else_body = []
         base = len(lines[idx]) - len(lines[idx].lstrip())
-        j = idx + 1 + len(body)
-        while j < len(lines) and (not lines[j].strip() or lines[j].strip().startswith("#")):
-            j += 1
+        j = idx + 1
+        while j < len(lines):
+            l = lines[j]
+            if not l.strip() or l.strip().startswith("#"):
+                j += 1
+                continue
+            ind = len(l) - len(l.lstrip())
+            if ind > base:
+                j += 1
+                continue
+            break
         if j < len(lines):
             es = lines[j].strip()
-            if es.startswith("e:") or es.startswith("else:") or es.startswith("e ") or es.startswith("else "):
+            if es.startswith(("e:", "else:", "e ", "else ")):
                 if ":" in es:
                     _, efirst = es.split(":", 1)
                     if efirst.strip():
@@ -300,7 +328,7 @@ class Interpreter:
 
         if cond:
             return self.execute_block(body, env)
-        elif else_body:
+        if else_body:
             return self.execute_block(else_body, env)
         return None
 
@@ -334,6 +362,19 @@ class Interpreter:
             result = self.execute_block(body, env)
         return result
 
+    def _for_in(self, header: str, lines: List[str], idx: int, env: Environment) -> Any:
+        m = re.match(r"f\s+(\w+)\s+in\s+(.+):", header)
+        if not m:
+            raise TokError("Use: f x in xs:")
+        var, iter_expr = m.group(1), m.group(2).strip()
+        iterable = self.eval_expr(iter_expr, env)
+        body = self._body(lines, idx)
+        result = None
+        for val in iterable:
+            env.set(var, val)
+            result = self.execute_block(body, env)
+        return result
+
     def _def_func(self, header: str, lines: List[str], idx: int, env: Environment) -> Any:
         if ":" not in header:
             raise TokError("Function needs :")
@@ -361,7 +402,7 @@ class Interpreter:
             try:
                 consumes = (
                     s.startswith(("i ", "if ", "w ", "while ")) or
-                    (s.startswith("f ") and (".." in s or ":" in s)) or
+                    (s.startswith("f ") and (":" in s)) or
                     s.startswith(("e:", "else:", "e ", "else "))
                 )
                 self.execute_line(line, lines, i, self.env)
