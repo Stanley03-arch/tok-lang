@@ -1,33 +1,32 @@
-# Tok v1.3
+# Tok v1.4
 
-p "=== Tok v1.3 ==="
+p "=== Tok v1.4 ==="
 p version()
 
-# assert
-assert 1 + 1 == 2
+# break in while
+n = 0
+w n < 10:
+  n = n + 1
+  i n == 3:
+    break
+  p n
+p "after while"
+
+# continue in for
+f i = 1..5:
+  i i == 3:
+    continue
+  p i
+
+assert true
 p "assert ok"
 
-try:
-  assert 1 == 0
-catch e:
-  p "caught bad assert"
-
-# core still works
-record Point x y:
-  f sum:
-    self.x + self.y
-p Point(3, 4).sum()
-
-f double n:
-  n * 2
-p map(double, [1, 2, 3])
-
-p [x * 10 for x in [1, 2, 3] if x > 1]
-
-a = agent("T", "test")
 f echo q:
-  "echo:" + q
+  "got:" + q
+a = agent("A", "t")
 add_tool(a, tool("echo", echo))
 p run_agent(a, "hi")
+
+p [x for x in [1,2,3,4] if x > 2]
 
 p "=== done ==="
