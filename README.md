@@ -2,7 +2,7 @@
 
 **Tok** — experimental ultra-token-efficient language for AI-assisted development.
 
-> **Version 1.5**
+> **Version 1.5** — see [CHANGELOG.md](CHANGELOG.md)
 
 ## Quick start
 
